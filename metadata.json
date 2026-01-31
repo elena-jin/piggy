@@ -1,0 +1,8 @@
+
+{
+  "name": "Piggy - AI Financial Guide for Kids",
+  "description": "An interactive storybook and AI companion that teaches children (ages 7-12) about money through personalized adventures and real-time conversation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

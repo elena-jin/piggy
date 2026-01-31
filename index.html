@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piggy - Your AI Storybook Friend</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #fffcf2;
+            overflow-x: hidden;
+        }
+        .page-flip-enter {
+            transform: rotateY(-90deg);
+            opacity: 0;
+        }
+        .page-flip-enter-active {
+            transform: rotateY(0deg);
+            opacity: 1;
+            transition: transform 0.6s, opacity 0.6s;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        .badge-glow {
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "@solana/web3.js": "https://esm.sh/@solana/web3.js@1.95.3",
+    "@metaplex-foundation/js": "https://esm.sh/@metaplex-foundation/js@0.20.1",
+    "buffer": "https://esm.sh/buffer@6.0.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
