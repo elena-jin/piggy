@@ -59,14 +59,14 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
         }
         const ctx = audioContextRef.current;
         const audioBuffer = await decodeAudioData(decode(base64Audio), ctx, 24000, 1);
-        
+
         const source = ctx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(ctx.destination);
-        
+
         const duration = audioBuffer.duration;
         const timePerWord = (duration * 1000) / words.length;
-        
+
         let startTime = Date.now();
         highlightIntervalRef.current = window.setInterval(() => {
           const elapsed = Date.now() - startTime;
@@ -90,7 +90,7 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
 
   const stopSpeaking = () => {
     if (currentSourceRef.current) {
-      try { currentSourceRef.current.stop(); } catch(e) {}
+      try { currentSourceRef.current.stop(); } catch (e) { }
       currentSourceRef.current = null;
     }
     if (highlightIntervalRef.current) {
@@ -143,7 +143,7 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-black text-pink-600">{book.title}</h2>
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => speakText(page.text)}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${isSpeaking ? 'bg-pink-500 text-white animate-pulse' : 'bg-pink-100 text-pink-500 hover:bg-pink-200'}`}
           >
@@ -159,7 +159,7 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
         <div className="w-full md:w-1/2 aspect-square relative rounded-3xl overflow-hidden shadow-2xl border-4 border-pink-50 bg-stone-50">
           {isLoadingImage ? (
             <div className="absolute inset-0 flex items-center justify-center bg-pink-50/50">
-              <PigLoading className="w-32 h-32" />
+              <PigLoading className="w-64 h-64" />
             </div>
           ) : (
             page.image_url && (
@@ -171,22 +171,21 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
         <div className="w-full md:w-1/2 flex flex-col justify-center space-y-6">
           <div className="bg-pink-50 p-8 rounded-3xl border-2 border-pink-100 min-h-[220px] flex flex-wrap items-center content-center gap-x-2 gap-y-2">
             {words.map((word, i) => (
-              <span 
-                key={i} 
+              <span
+                key={i}
                 className={`text-2xl transition-all duration-300 ${i <= highlightedWordIndex ? 'text-pink-600 font-black scale-110' : 'text-stone-700 font-medium'}`}
               >
                 {word}
               </span>
             ))}
           </div>
-          
+
           <div className="flex gap-4 pt-4">
             <button
               onClick={handlePrev}
               disabled={currentPage === 0}
-              className={`flex-1 py-4 rounded-2xl font-black text-xl shadow-md transition-all ${
-                currentPage === 0 ? 'bg-stone-200 text-stone-400 cursor-not-allowed' : 'bg-white text-pink-500 border-2 border-pink-100 hover:bg-pink-50'
-              }`}
+              className={`flex-1 py-4 rounded-2xl font-black text-xl shadow-md transition-all ${currentPage === 0 ? 'bg-stone-200 text-stone-400 cursor-not-allowed' : 'bg-white text-pink-500 border-2 border-pink-100 hover:bg-pink-50'
+                }`}
             >
               Back
             </button>

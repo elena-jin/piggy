@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^19.2.4",
     "@google/genai": "^1.39.0",
-    "react": "^19.2.4",
-    "@solana/web3.js": "1.95.3",
     "@metaplex-foundation/js": "0.20.1",
-    "buffer": "6.0.3"
+    "@solana/web3.js": "1.95.3",
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.46",
+    "buffer": "6.0.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
