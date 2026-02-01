@@ -40,6 +40,14 @@ export const generateStory = async (age: number, concept: string): Promise<Story
     const prompt = `Generate an interactive storybook for Piggy, an AI storybook author. 
     Target Age: ${age}. Concept: ${concept}. 
     The main character is Piggy (a pig). 
+    
+    IMPORTANT for "knowledge_check":
+    - Do NOT ask recall questions about what happened in the story (e.g., "What did Piggy buy?").
+    - Instead, generate "What would YOU do?" scenarios relevant to the child's life but related to the concept.
+    - Scenarios should cover real-life situations like spending allowance, buying gifts, saving for a toy, or sharing.
+    - Example: "You have $5 for allowance. You want a toy that costs $4, but your friend's birthday is tomorrow. What do you do?"
+    - Ensure choices illustrate the financial concept clearly.
+
     Follow the exact JSON format requested in the instructions. 
     ${rules}`;
 
