@@ -15,14 +15,22 @@ interface MascotProps {
 interface PiggySplineProps {
   className?: string;
   isMouthOpen?: boolean;
+  isLoading?: boolean;
   onLoad?: (splineApp: any) => void;
 }
 
-const PiggySpline: React.FC<PiggySplineProps> = ({ className, isMouthOpen = false, onLoad }) => {
+const PiggySpline: React.FC<PiggySplineProps> = ({ className, isMouthOpen = false, isLoading = false, onLoad }) => {
   const splineRef = useRef<any>(null);
 
   const handleLoad = (splineApp: any) => {
     splineRef.current = splineApp;
+    // Apply initial state to catch up with props
+    try {
+      if (isLoading) splineApp.setVariable('isLoading', 1);
+      if (isMouthOpen) splineApp.setVariable('mouthOpen', 1);
+    } catch (e) {
+      console.warn("Spline init error", e);
+    }
     if (onLoad) onLoad(splineApp);
   };
 
@@ -45,6 +53,14 @@ const PiggySpline: React.FC<PiggySplineProps> = ({ className, isMouthOpen = fals
     }
     return () => clearInterval(interval);
   }, [isMouthOpen]);
+
+  useEffect(() => {
+    if (splineRef.current) {
+      try {
+        splineRef.current.setVariable('isLoading', isLoading ? 1 : 0);
+      } catch (e) { /* ignore */ }
+    }
+  }, [isLoading]);
 
   return (
     <div className={`relative ${className} overflow-hidden group`}>
@@ -76,7 +92,7 @@ const PiggySpline: React.FC<PiggySplineProps> = ({ className, isMouthOpen = fals
 export const PigLoading: React.FC<MascotProps> = ({ className = "w-64 h-64" }) => {
   return (
     <div className={`relative ${className} rounded-full border-8 border-pink-100 shadow-xl bg-pink-50 overflow-hidden flex items-center justify-center`}>
-      <PiggySpline className="w-full h-full object-cover" />
+      <PiggySpline className="w-full h-full object-cover" isLoading={true} />
     </div>
   );
 };
@@ -119,7 +135,7 @@ export const PigSuccess: React.FC<MascotProps & { onComplete: () => void }> = ({
     <div className="flex-1 flex flex-col items-center justify-center p-10 space-y-8 animate-fadeIn">
       <h2 className="text-5xl font-black text-pink-600 animate-bounce tracking-tight text-center">HOORAY!<br />YOU DID IT!</h2>
       <div className={`relative ${className} max-w-sm aspect-square bg-white rounded-[3rem] overflow-hidden shadow-2xl border-8 border-pink-100`}>
-        <PiggySpline className="w-full h-full" />
+        <PiggySpline className="w-full h-full" isLoading={true} />
       </div>
       <div className="text-center space-y-2">
         <p className="text-2xl font-bold text-stone-700">You earned a Gold Star! ⭐</p>

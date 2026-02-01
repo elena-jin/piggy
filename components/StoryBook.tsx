@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Page, StoryData } from '../types';
-import { generateImage, generateAudio } from '../services/gemini';
+import { StoryData } from '../types';
+import { generateImage } from '../services/gemini';
+import { streamAudioFromText } from '../services/elevenlabs';
 import { PigLoading } from './Mascot';
 
 interface StoryBookProps {
@@ -18,47 +19,71 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
   const audioContextRef = useRef<AudioContext | null>(null);
   const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const highlightIntervalRef = useRef<number | null>(null);
+  const speakRequestIdRef = useRef(0);
 
   const book = storyData.book;
   const page = book.pages[currentPage];
   const words = page.text.split(' ');
 
-  const decode = (base64: string) => {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+  const stopSpeaking = () => {
+    if (currentSourceRef.current) {
+      try { currentSourceRef.current.stop(); } catch (e) { }
+      currentSourceRef.current = null;
     }
-    return bytes;
-  };
-
-  const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number) => {
-    const dataInt16 = new Int16Array(data.buffer);
-    const frameCount = dataInt16.length / numChannels;
-    const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-    for (let channel = 0; channel < numChannels; channel++) {
-      const channelData = buffer.getChannelData(channel);
-      for (let i = 0; i < frameCount; i++) {
-        channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-      }
+    if (highlightIntervalRef.current) {
+      window.clearInterval(highlightIntervalRef.current);
+      highlightIntervalRef.current = null;
     }
-    return buffer;
+    setIsSpeaking(false);
+    setHighlightedWordIndex(-1);
   };
 
   const speakText = async (text: string) => {
-    if (isSpeaking) stopSpeaking();
+    // 1. Stop any currently playing audio immediately
+    stopSpeaking();
 
+    // 2. Set distinct state to show we are "loading" audio
     setIsSpeaking(true);
     setHighlightedWordIndex(-1);
 
+    // 3. Increment request ID to invalidate previous pending requests
+    const myRequestId = ++speakRequestIdRef.current;
+
+    // 4. Create a local flag to check if this request becomes stale due to page change
+    const myPageId = currentPage;
+
     try {
-      const base64Audio = await generateAudio(`Read this story page warmly and slowly: ${text}`);
-      if (base64Audio) {
+      console.log(`[StoryBook] Speaking page ${myPageId} (req=${myRequestId}): "${text.substring(0, 20)}..."`);
+
+      const audioBufferData = await streamAudioFromText(text);
+
+      // Check if we have been superseded by a newer request
+      if (speakRequestIdRef.current !== myRequestId) {
+        console.log(`[StoryBook] Request superseded (req=${myRequestId}, current=${speakRequestIdRef.current}), discarding audio.`);
+        return;
+      }
+
+      // Check if user moved to another page while we were fetching (redundant with ID check usually, but good for safety)
+      if (currentPage !== myPageId) {
+        console.log(`[StoryBook] Page changed (req=${myRequestId}, curr=${currentPage}), discarding audio.`);
+        return;
+      }
+
+      if (audioBufferData) {
         if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
         const ctx = audioContextRef.current;
-        const audioBuffer = await decodeAudioData(decode(base64Audio), ctx, 24000, 1);
+
+        // Ensure context is running (browser autoplay policy)
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+
+        const audioBuffer = await ctx.decodeAudioData(audioBufferData);
+
+        // Check again after decoding
+        if (speakRequestIdRef.current !== myRequestId) return;
 
         const source = ctx.createBufferSource();
         source.buffer = audioBuffer;
@@ -74,31 +99,33 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
           if (index < words.length) {
             setHighlightedWordIndex(index);
           } else {
-            stopSpeaking();
+            if (highlightIntervalRef.current) {
+              window.clearInterval(highlightIntervalRef.current);
+              highlightIntervalRef.current = null;
+            }
           }
         }, 50);
 
-        source.onended = () => stopSpeaking();
+        source.onended = () => {
+          // Only reset state if we are still on the same page/same audio
+          if (currentSourceRef.current === source) {
+            setIsSpeaking(false);
+            setHighlightedWordIndex(-1);
+            currentSourceRef.current = null;
+          }
+        };
+
         currentSourceRef.current = source;
         source.start();
+        console.log(`[StoryBook] Audio started for page ${myPageId}`);
+      } else {
+        console.warn("[StoryBook] No audio data received");
+        setIsSpeaking(false);
       }
     } catch (error) {
-      console.error("Narrator failed", error);
+      console.error("[StoryBook] Narrator failed", error);
       setIsSpeaking(false);
     }
-  };
-
-  const stopSpeaking = () => {
-    if (currentSourceRef.current) {
-      try { currentSourceRef.current.stop(); } catch (e) { }
-      currentSourceRef.current = null;
-    }
-    if (highlightIntervalRef.current) {
-      window.clearInterval(highlightIntervalRef.current);
-      highlightIntervalRef.current = null;
-    }
-    setIsSpeaking(false);
-    setHighlightedWordIndex(-1);
   };
 
   useEffect(() => {
@@ -121,7 +148,16 @@ const StoryBook: React.FC<StoryBookProps> = ({ storyData, onComplete, onUpdateSt
     };
 
     fetchImageAndSpeak();
-    return () => stopSpeaking();
+    return () => {
+      // Don't call stopSpeaking here because it sets state which might be unmounted?
+      // Actually safe to call, but cleaner to just stop source.
+      if (currentSourceRef.current) {
+        try { currentSourceRef.current.stop(); } catch (e) { }
+      }
+      if (highlightIntervalRef.current) {
+        window.clearInterval(highlightIntervalRef.current);
+      }
+    };
   }, [currentPage]);
 
   const handleNext = () => {

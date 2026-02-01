@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@11labs/client": "^0.2.0",
     "@google/genai": "^1.39.0",
     "@metaplex-foundation/js": "0.20.1",
     "@solana/web3.js": "1.95.3",

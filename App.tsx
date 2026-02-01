@@ -97,7 +97,7 @@ const App: React.FC = () => {
           dateEarned: new Date().toLocaleDateString(),
           storyTitle: story.book.title
         };
-        
+
         await authService.saveBadge(user.username, newBadge);
         const updatedUser = await authService.getUser(user.username);
         setUser(updatedUser);
@@ -119,13 +119,13 @@ const App: React.FC = () => {
             <span className="font-bold text-pink-600">Hi, {user?.username}!</span>
           </div>
           <div className="flex gap-4">
-            <button 
+            <button
               onClick={() => setState(AppState.COLLECTION)}
               className="bg-white px-4 py-2 rounded-2xl text-pink-500 font-bold shadow-sm border-2 border-pink-50 hover:bg-pink-50 transition-all flex items-center gap-2"
             >
               <span>🏆</span> Collection
             </button>
-            <button 
+            <button
               onClick={() => setState(AppState.PARENT_CORNER)}
               className="bg-white px-4 py-2 rounded-2xl text-stone-500 font-bold shadow-sm border-2 border-stone-100 hover:bg-stone-50 transition-all flex items-center gap-2"
             >
@@ -136,7 +136,7 @@ const App: React.FC = () => {
       )}
 
       <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden min-h-[600px] flex flex-col border-8 border-pink-100 relative">
-        
+
         {state === AppState.AUTH && (
           <Auth onLoginSuccess={handleLoginSuccess} />
         )}
@@ -153,10 +153,10 @@ const App: React.FC = () => {
         )}
 
         {state === AppState.READING && story && (
-          <StoryBook 
-            storyData={story} 
-            onComplete={() => setState(AppState.SUCCESS_ANIMATION)} 
-            onUpdateStory={updateCachedStory} 
+          <StoryBook
+            storyData={story}
+            onComplete={() => setState(AppState.SUCCESS_ANIMATION)}
+            onUpdateStory={updateCachedStory}
           />
         )}
 
@@ -177,9 +177,9 @@ const App: React.FC = () => {
         )}
 
         {state === AppState.PARENT_CORNER && (
-          <ParentCorner 
-            walletAddress={walletAddress} 
-            setWalletAddress={setWalletAddress} 
+          <ParentCorner
+            walletAddress={walletAddress}
+            setWalletAddress={setWalletAddress}
             onBack={() => setState(AppState.SETUP)}
             onLogOut={handleLogOut}
           />
@@ -191,8 +191,8 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
-      
-      <p className="mt-4 text-pink-300 text-sm font-medium">Safe & Educational Learning for Kids • Secure Local Authentication</p>
+
+      <p className="mt-4 text-pink-300 text-sm font-medium">Safe & Educational Learning for Kids</p>
     </div>
   );
 };
