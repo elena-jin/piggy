@@ -95,7 +95,8 @@ const App: React.FC = () => {
           image: meta.image,
           mintAddress: sig,
           dateEarned: new Date().toLocaleDateString(),
-          storyTitle: story.book.title
+          storyTitle: story.book.title,
+          skillType: meta.skillType || 'Money Basics'
         };
 
         await authService.saveBadge(user.username, newBadge);
@@ -113,25 +114,47 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {state !== AppState.AUTH && (
-        <div className="max-w-4xl w-full flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 bg-white/50 px-4 py-2 rounded-full border border-pink-50 shadow-sm">
-            <span className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center text-sm">🐷</span>
-            <span className="font-bold text-pink-600">Hi, {user?.username}!</span>
+        <div className="max-w-4xl w-full flex space-x-4 mb-4">
+          {/* Main User Panel */}
+          <div className="flex-1 flex justify-between items-center bg-white/80 backdrop-blur px-6 py-3 rounded-3xl border border-pink-100 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-xl">🐷</span>
+              <div>
+                <p className="text-xs text-stone-400 font-bold uppercase tracking-widest">Piggy Wallet</p>
+                <p className="font-black text-pink-600 text-lg leading-none">
+                  {user?.badges.length || 0} Money Skills
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setState(AppState.COLLECTION)}
+                className="bg-pink-50 text-pink-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-pink-100 transition-colors"
+              >
+                View Wallet
+              </button>
+            </div>
           </div>
-          <div className="flex gap-4">
+
+          {/* Parent/Secondary Actions */}
+          <div className="flex gap-2">
             <button
-              onClick={() => setState(AppState.COLLECTION)}
-              className="bg-white px-4 py-2 rounded-2xl text-pink-500 font-bold shadow-sm border-2 border-pink-50 hover:bg-pink-50 transition-all flex items-center gap-2"
-            >
-              <span>🏆</span> Collection
-            </button>
-            <button
+              title="Parent settings and login"
               onClick={() => setState(AppState.PARENT_CORNER)}
-              className="bg-white px-4 py-2 rounded-2xl text-stone-500 font-bold shadow-sm border-2 border-stone-100 hover:bg-stone-50 transition-all flex items-center gap-2"
+              className="bg-white w-14 rounded-3xl text-stone-400 font-bold shadow-sm border border-stone-100 hover:bg-stone-50 transition-all flex items-center justify-center text-2xl"
             >
-              <span>🔐</span> Parent Corner
+              🔐
             </button>
           </div>
+        </div>
+      )}
+
+      {state !== AppState.AUTH && (
+        <div className="max-w-4xl w-full text-center mb-6 opacity-60 hover:opacity-100 transition-opacity cursor-help group">
+          <p className="text-[10px] text-stone-400 font-medium bg-stone-100 inline-block px-3 py-1 rounded-full">
+            ℹ️ Parents: Piggy Wallet is a learning record. In the future, it helps connect specific skills to real-world financial tools.
+          </p>
         </div>
       )}
 

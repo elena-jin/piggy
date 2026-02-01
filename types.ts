@@ -42,6 +42,7 @@ export interface Badge {
   mintAddress?: string;
   dateEarned: string;
   storyTitle: string;
+  skillType: string;
 }
 
 export interface User {

@@ -32,12 +32,16 @@ async function retryWithBackoff<T>(
 export const generateStory = async (age: number, concept: string): Promise<StoryData> => {
   return retryWithBackoff(async () => {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
+    const isOlder = age >= 10;
+    const rules = isOlder
+      ? "Text can use moderate vocabulary and compound sentences. Numbers can be larger ($1-$100) to introduce real-world pricing concepts."
+      : "Keep text simple, short, and friendly. Numbers should be small ($1-$20).";
+
     const prompt = `Generate an interactive storybook for Piggy, an AI storybook author. 
     Target Age: ${age}. Concept: ${concept}. 
     The main character is Piggy (a pig). 
     Follow the exact JSON format requested in the instructions. 
-    Keep text simple, short, and friendly. 
-    Numbers should be small ($1-$20).`;
+    ${rules}`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -123,7 +127,7 @@ export const generateImage = async (prompt: string): Promise<string | null> => {
   return retryWithBackoff(async () => {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const fullPrompt = `Children's book illustration, watercolor style, soft colors, adorable character. ${prompt}`;
-    
+
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
